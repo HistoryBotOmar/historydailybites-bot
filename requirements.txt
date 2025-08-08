@@ -1,0 +1,4 @@
+wikipedia-api
+requests
+TTS==0.17.9
+
