@@ -1,0 +1,43 @@
+name: Coqui TTS Test
+
+on:
+  workflow_dispatch: {}   # run manually
+  push:
+    paths:
+      - "src/tts_coqui.py"
+      - ".github/workflows/tts.yml"
+      - "requirements.txt"
+
+jobs:
+  tts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install deps (Coqui + Torch CPU)
+        run: |
+          python -m pip install --upgrade pip wheel
+          pip install -r requirements.txt
+          pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Run TTS (generate voiceover.wav)
+        env:
+          TTS_TEXT: "Did you know a new history fact is coming right up? Follow for more daily history bites!"
+          TTS_SPEAKER: "p231"
+          OUT_WAV: "voiceover.wav"
+        run: python src/tts_coqui.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: voiceover
+          path: voiceover.wav
